@@ -3,9 +3,6 @@
 ## Test task in Data Science
 
 ---
-**Goal:** build a semantic segmentation model
-
-**Dataset:** [link](https://www.kaggle.com/c/airbus-ship-detection/data)
 
 ## Quick start
 1. [Install CUDA](https://developer.nvidia.com/cuda-downloads)
@@ -22,12 +19,6 @@ pip install -r requirements.txt
 bash scripts/download_data.sh
 python train.py --amp
 ```
-
-## Description
-This model was trained from scratch with 5k images and scored a [Dice coefficient](https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient) of 0.988423 on over 100k test images.
-
-It can be easily used for multiclass segmentation, portrait segmentation, medical segmentation, ...
-
 
 ## Usage
 **Note : Use Python 3.11 or newer**
@@ -61,17 +52,14 @@ After training your model and saving it to `MODEL.pth`, you can easily test the 
 
 To predict a single image and save it:
 
-`python predict.py -i image.jpg -o output.jpg`
+`python predict.py -i image.jpg --viz`
 
-To predict a multiple images and show them without saving them:
 
-`python predict.py -i image1.jpg image2.jpg --viz --no-save`
 
 ```console
 > python predict.py -h
 usage: predict.py [-h] [--model FILE] --input INPUT [INPUT ...] 
-                  [--output INPUT [INPUT ...]] [--viz] [--no-save]
-                  [--mask-threshold MASK_THRESHOLD] [--scale SCALE]
+                  [--viz] [--mask-threshold MASK_THRESHOLD] [--scale SCALE]
 
 Predict masks from input images
 
@@ -81,10 +69,8 @@ optional arguments:
                         Specify the file in which the model is stored
   --input INPUT [INPUT ...], -i INPUT [INPUT ...]
                         Filenames of input images
-  --output INPUT [INPUT ...], -o INPUT [INPUT ...]
-                        Filenames of output images
   --viz, -v             Visualize the images as they are processed
-  --no-save, -n         Do not save the output masks
+  
   --mask-threshold MASK_THRESHOLD, -t MASK_THRESHOLD
                         Minimum probability value to consider a mask pixel white
   --scale SCALE, -s SCALE
@@ -95,7 +81,36 @@ You can specify which model file to use with `--model MODEL.pth`.
 ## Data
 The AirBus Ship Detection data is available on the [Kaggle website](https://www.kaggle.com/competitions/airbus-ship-detection/data).
 
+## Complete description of solution
+
+**Task**
+
+I have never worked with CV problems except for MNIST classification, so It was challenging to understand what my task was. I had to check other Kaggler's solutions. Also, it's the first time I've seen RLE decoding. 
+
+**EDA**
+
+As soon as I understood my task, I started the EDA phase. I observed that DataSet is unbalanced. 78% of images have no ships on them. Also, those ships are too small, 0.05% of pixels are related to ships. This imbalance makes creating a good model - a challenging task. 
+
+**Data Preprocessing**
+
+The major problem in this phase was creating a representative data set for training. I have decided to drop all non-ship images. Also, the memory issue I faced was fixed by splitting the data into batches of 64 images. Then bathes are converted into small numpy arrays with shape [768,768,1] for masks and [768,768,3] - for images. Then all these batches were merged into two big arrays. In the end, I created a custom PyTorch DataSet 
+
+**Training Model**
+
+I have never worked with TensorFlow, so I decided to make a good training process using PyTorch. The default Unet model was chosen, because it's the simplest CNN model for semantic segmentation problems.
+
+**Evaluation** 
+
+In the technical task were suggestions to use the Dice score, but LoU is used as a metric by Airbus. So I decided to use Dice. 
+
+**Results**
+
+I had limited time to fine-tune the model because most of the time I have spent on EDA and Data Preprocessing. I have seen the solution where people were using transfer learning. Then trained the classification model, and used those weights for semantic segmentation, I wanted to try, but the lack of time didn't leave a chance. 
+
+Even so, I have installed CUDA and 3070Ti GPU - it takes a significant amount of time, to train a good model, so as an example that my model is working I trained it on 1k images(900 for training, 100 evaluation). There are images in the dir folder that show that on even that small Data, the model can detect ships on images.
+
 ---
+
 
 Original paper by Olaf Ronneberger, Philipp Fischer, Thomas Brox:
 

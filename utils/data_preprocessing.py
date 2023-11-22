@@ -208,4 +208,3 @@ def get_X_y_data(data, resized=False):
     print('y shape:', masks_combined.shape)
 
     return images_rgb_combined, masks_combined
-
