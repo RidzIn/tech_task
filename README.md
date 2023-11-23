@@ -14,10 +14,16 @@
 pip install -r requirements.txt
 ```
 
-4. Download the data and run training:
+4. Download model and run training:
+
 ```bash
 bash scripts/download_data.sh
 python train.py --amp
+```
+
+
+```bash
+python download_data.py 
 ```
 
 ## Usage
